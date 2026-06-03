@@ -9,7 +9,28 @@ from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sess
 
 from config.settings import settings
 
-engine = create_async_engine(settings.postgres_url, echo=False, pool_size=10, max_overflow=20)
+# Strip any sslmode/ssl query params from URL — asyncpg handles SSL via connect_args
+import ssl as _ssl
+from urllib.parse import urlparse, urlencode, parse_qs, urlunparse
+
+def _clean_pg_url(url: str) -> tuple[str, dict]:
+    """Remove ssl/sslmode params from URL and return clean URL + connect_args."""
+    parsed = urlparse(url)
+    params = parse_qs(parsed.query)
+    ssl_requested = params.pop("sslmode", None) or params.pop("ssl", None)
+    clean_query = urlencode({k: v[0] for k, v in params.items()})
+    clean_url = urlunparse(parsed._replace(query=clean_query))
+    connect_args = {"ssl": _ssl.create_default_context()} if ssl_requested else {}
+    return clean_url, connect_args
+
+_pg_url, _connect_args = _clean_pg_url(settings.postgres_url)
+engine = create_async_engine(
+    _pg_url,
+    echo=False,
+    pool_size=10,
+    max_overflow=20,
+    connect_args=_connect_args,
+)
 AsyncSessionLocal = async_sessionmaker(engine, expire_on_commit=False)
 
 

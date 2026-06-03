@@ -23,8 +23,23 @@ from sqlalchemy.orm import sessionmaker
 
 from config.settings import settings
 
-_sync_url = settings.postgres_url.replace("+asyncpg", "+psycopg2")
-_sync_engine = create_engine(_sync_url, pool_size=5, max_overflow=10)
+# Strip ssl params from URL — psycopg2 uses sslmode differently
+from urllib.parse import urlparse, urlencode, parse_qs, urlunparse as _urlunparse
+
+def _build_sync_url(url: str) -> tuple[str, dict]:
+    url = url.replace("+asyncpg", "+psycopg2")
+    parsed = urlparse(url)
+    params = parse_qs(parsed.query)
+    ssl_val = params.pop("ssl", None) or params.pop("sslmode", None)
+    clean_query = urlencode({k: v[0] for k, v in params.items()})
+    clean_url = _urlunparse(parsed._replace(query=clean_query))
+    # psycopg2 uses sslmode in connect_args
+    connect_args = {"sslmode": "require"} if ssl_val else {}
+    return clean_url, connect_args
+
+_sync_url, _sync_connect_args = _build_sync_url(settings.postgres_url)
+_sync_engine = create_engine(_sync_url, pool_size=5, max_overflow=10,
+                              connect_args=_sync_connect_args)
 SyncSession = sessionmaker(_sync_engine)
 
 # Status rank — higher = further along. Never go backwards.
