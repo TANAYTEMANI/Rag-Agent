@@ -1,0 +1,151 @@
+services:
+
+  # ── 1. API ─────────────────────────────────────────────────────────────────
+  - type: web
+    name: rag-agent-api
+    runtime: docker
+    dockerfilePath: docker/Dockerfile.api
+    branch: main
+    plan: free
+    healthCheckPath: /health
+    envVars:
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: JINA_API_KEY
+        sync: false
+      - key: POSTGRES_URL
+        sync: false
+      - key: REDIS_URL
+        sync: false
+      - key: QDRANT_HOST
+        sync: false
+      - key: QDRANT_PORT
+        value: "6333"
+      - key: QDRANT_API_KEY
+        sync: false
+      - key: UPLOAD_DIR
+        value: /tmp/uploads
+      - key: TABLE_STORE_DIR
+        value: /tmp/table_store
+      - key: ENRICHMENT_MODEL
+        value: claude-haiku-4-5-20251001
+      - key: GENERATION_MODEL
+        value: claude-sonnet-4-6
+      - key: JINA_EMBED_MODEL
+        value: jina-embeddings-v3
+      - key: JINA_IMAGE_MODEL
+        value: jina-embeddings-v4
+      - key: JINA_RERANK_MODEL
+        value: jina-reranker-v3
+      - key: EMBED_DIMENSIONS
+        value: "1024"
+      - key: TOP_K_RETRIEVAL
+        value: "20"
+      - key: TOP_N_RERANKED
+        value: "5"
+      - key: RERANKER_SCORE_THRESHOLD
+        value: "0.3"
+      - key: SEMANTIC_CACHE_THRESHOLD
+        value: "0.95"
+      - key: CHUNK_BATCH_SIZE
+        value: "20"
+
+  # ── 2. Parse Worker ────────────────────────────────────────────────────────
+  - type: worker
+    name: rag-agent-worker-parse
+    runtime: docker
+    dockerfilePath: docker/Dockerfile.worker
+    dockerCommand: celery -A ingestion.worker worker -Q parse --concurrency=4 --loglevel=info
+    branch: main
+    plan: free
+    envVars:
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: JINA_API_KEY
+        sync: false
+      - key: POSTGRES_URL
+        sync: false
+      - key: REDIS_URL
+        sync: false
+      - key: QDRANT_HOST
+        sync: false
+      - key: QDRANT_PORT
+        value: "6333"
+      - key: QDRANT_API_KEY
+        sync: false
+      - key: UPLOAD_DIR
+        value: /tmp/uploads
+      - key: TABLE_STORE_DIR
+        value: /tmp/table_store
+      - key: ENRICHMENT_MODEL
+        value: claude-haiku-4-5-20251001
+      - key: GENERATION_MODEL
+        value: claude-sonnet-4-6
+      - key: JINA_EMBED_MODEL
+        value: jina-embeddings-v3
+      - key: JINA_IMAGE_MODEL
+        value: jina-embeddings-v4
+      - key: JINA_RERANK_MODEL
+        value: jina-reranker-v3
+      - key: EMBED_DIMENSIONS
+        value: "1024"
+      - key: TOP_K_RETRIEVAL
+        value: "20"
+      - key: TOP_N_RERANKED
+        value: "5"
+      - key: RERANKER_SCORE_THRESHOLD
+        value: "0.3"
+      - key: SEMANTIC_CACHE_THRESHOLD
+        value: "0.95"
+      - key: CHUNK_BATCH_SIZE
+        value: "20"
+
+  # ── 3. Embed Worker ────────────────────────────────────────────────────────
+  - type: worker
+    name: rag-agent-worker-embed
+    runtime: docker
+    dockerfilePath: docker/Dockerfile.worker
+    dockerCommand: celery -A ingestion.worker worker -Q embed --concurrency=8 --loglevel=info
+    branch: main
+    plan: free
+    envVars:
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: JINA_API_KEY
+        sync: false
+      - key: POSTGRES_URL
+        sync: false
+      - key: REDIS_URL
+        sync: false
+      - key: QDRANT_HOST
+        sync: false
+      - key: QDRANT_PORT
+        value: "6333"
+      - key: QDRANT_API_KEY
+        sync: false
+      - key: UPLOAD_DIR
+        value: /tmp/uploads
+      - key: TABLE_STORE_DIR
+        value: /tmp/table_store
+      - key: ENRICHMENT_MODEL
+        value: claude-haiku-4-5-20251001
+      - key: GENERATION_MODEL
+        value: claude-sonnet-4-6
+      - key: JINA_EMBED_MODEL
+        value: jina-embeddings-v3
+      - key: JINA_IMAGE_MODEL
+        value: jina-embeddings-v4
+      - key: JINA_RERANK_MODEL
+        value: jina-reranker-v3
+      - key: EMBED_DIMENSIONS
+        value: "1024"
+      - key: TOP_K_RETRIEVAL
+        value: "20"
+      - key: TOP_N_RERANKED
+        value: "5"
+      - key: RERANKER_SCORE_THRESHOLD
+        value: "0.3"
+      - key: SEMANTIC_CACHE_THRESHOLD
+        value: "0.95"
+      - key: CHUNK_BATCH_SIZE
+        value: "20"
