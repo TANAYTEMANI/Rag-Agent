@@ -1,6 +1,0 @@
-# Force CPU-only torch across all transitive dependencies.
-# This file is passed as `pip install -c constraints-cpu.txt` so that
-# when docling (or anything else) requests torch, pip uses the CPU wheel
-# instead of pulling the full 1.5GB CUDA build.
-torch==2.3.1+cpu
-torchvision==0.18.1+cpu
