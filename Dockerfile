@@ -4,10 +4,9 @@ WORKDIR /app
 ENV PYTHONPATH=/app
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    libgl1 libglib2.0-0 poppler-utils curl \
+    poppler-utils curl libglib2.0-0 \
     && rm -rf /var/lib/apt/lists/*
 
-# requirements.txt is at repo root — same level as this Dockerfile
 COPY requirements.txt .
 RUN pip install --no-cache-dir --upgrade pip \
     && pip install --no-cache-dir -r requirements.txt \
