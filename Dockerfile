@@ -7,7 +7,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     poppler-utils curl libglib2.0-0 \
     && rm -rf /var/lib/apt/lists/*
 
-# Inline all dependencies — avoids build context issues on Railway
 RUN pip install --no-cache-dir --upgrade pip && \
     pip install --no-cache-dir \
     fastapi==0.115.12 \
@@ -38,7 +37,9 @@ RUN pip install --no-cache-dir --upgrade pip && \
     pillow==11.2.1
 
 COPY . .
-RUN chmod +x start.sh
+
+# Write start.sh inline — avoids any file-not-found issues
+RUN printf '#!/bin/bash\nmkdir -p /tmp/uploads /tmp/table_store\necho "Starting Celery parse worker..."\ncelery -A ingestion.worker worker -Q parse --concurrency=2 --loglevel=info --logfile=/tmp/worker-parse.log --pidfile=/tmp/worker-parse.pid --detach || echo "parse worker warning"\necho "Starting Celery embed worker..."\ncelery -A ingestion.worker worker -Q embed --concurrency=4 --loglevel=info --logfile=/tmp/worker-embed.log --pidfile=/tmp/worker-embed.pid --detach || echo "embed worker warning"\necho "Starting FastAPI on port ${PORT:-8000}..."\nexec uvicorn api.main:app --host 0.0.0.0 --port "${PORT:-8000}"\n' > /app/start.sh && chmod +x /app/start.sh
 
 EXPOSE 8000
-CMD ["bash", "start.sh"]
+CMD ["bash", "/app/start.sh"]
