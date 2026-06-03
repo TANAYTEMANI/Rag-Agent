@@ -27,8 +27,8 @@ async def health(
     try:
         await db.execute(text("SELECT 1"))
         results["postgres"] = "ok"
-    except Exception:
-        pass
+    except Exception as e:
+        results["postgres_error"] = str(e)[:200]
 
     try:
         await r.ping()
