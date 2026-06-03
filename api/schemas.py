@@ -74,4 +74,3 @@ class HealthResponse(BaseModel):
     qdrant: str
     postgres: str
     redis: str
-    postgres_error: str | None = None
