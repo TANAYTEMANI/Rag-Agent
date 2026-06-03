@@ -3,23 +3,18 @@ FROM python:3.11-slim
 WORKDIR /app
 ENV PYTHONPATH=/app
 
-# System deps — cached layer, only rebuilds if this changes
 RUN apt-get update && apt-get install -y --no-install-recommends \
     libgl1 libglib2.0-0 poppler-utils curl \
     && rm -rf /var/lib/apt/lists/*
 
-# Install Python deps — separate layer so code changes don't trigger reinstall
+# Install all deps (API + worker) in one layer
 COPY requirements.txt .
 RUN pip install --no-cache-dir --upgrade pip \
-    && pip install --no-cache-dir -r requirements.txt
+    && pip install --no-cache-dir -r requirements.txt \
+    && pip install --no-cache-dir pymupdf pypdf python-docx python-pptx celery[redis]
 
-# Copy application code last (changes most often)
 COPY . .
-
-# Install worker dependencies (pymupdf needed for parsing in same container)
-RUN pip install --no-cache-dir pymupdf pypdf python-docx python-pptx celery[redis]
+RUN chmod +x start.sh
 
 EXPOSE 8000
-COPY start.sh .
-RUN chmod +x start.sh
 CMD ["bash", "start.sh"]
