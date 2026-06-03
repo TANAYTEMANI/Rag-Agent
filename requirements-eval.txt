@@ -1,0 +1,4 @@
+# Evaluation only — run locally, not in Docker
+-r requirements.txt
+ragas==0.1.21
+datasets==3.6.0

@@ -1,0 +1,46 @@
+# Core API + query pipeline
+# Install with: pip install -r requirements.txt
+
+fastapi==0.115.12
+uvicorn[standard]==0.34.3
+python-multipart==0.0.20
+sse-starlette==2.3.6
+pydantic-settings==2.9.1
+pydantic==2.11.5
+
+# LLM
+anthropic==0.52.0
+
+# HTTP client
+httpx==0.28.1
+tenacity==9.1.2
+
+# Vector DB
+qdrant-client[async]==1.14.2
+
+# PostgreSQL
+sqlalchemy[asyncio]==2.0.41
+asyncpg==0.30.0
+psycopg2-binary==2.9.10
+
+# Redis / Celery
+celery[redis]==5.5.2
+redis==5.3.0
+
+# Tabular
+pandas==2.2.3
+openpyxl==3.1.5
+pyarrow==20.0.0
+asteval==1.0.5
+
+# Document parsing — fast, no ML models, no API calls
+pymupdf==1.24.14     # PyMuPDF (fitz): <10ms/page PDF text + image extraction
+pypdf==5.1.0         # fallback if pymupdf unavailable
+pdf2image==1.17.0    # alternative PNG render (needs poppler, used as fallback)
+python-docx==1.1.2   # DOCX text extraction
+python-pptx==1.0.2   # PPTX slide text extraction
+
+# Utils
+python-dotenv==1.1.0
+structlog==25.3.0
+pillow==11.2.1
